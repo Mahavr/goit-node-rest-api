@@ -5,6 +5,7 @@ import cors from "cors";
 import contactsRouter from "./routes/contactsRouter.js";
 
 const app = express();
+const port = 3000;
 
 app.use(morgan("tiny"));
 app.use(cors());
