@@ -2,6 +2,8 @@ import { signupUser, checkEmail } from "../services/contactsServices.js";
 import HttpError from "../helpers/HttpError.js";
 import { signToken } from "../services/jwtService.js";
 import bcrypt from "bcrypt";
+import { User } from "../models/userModel.js";
+
 export const signup = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -40,4 +42,23 @@ export const login = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+export const logout = async (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    await User.findByIdAndUpdate(_id, { token: null });
+
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+};
+export const getCurrent = (req, res) => {
+  const { email, subscription } = req.user;
+
+  res.json({
+    email,
+    subscription,
+  });
 };
