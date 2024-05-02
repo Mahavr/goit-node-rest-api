@@ -3,6 +3,16 @@ import HttpError from "../helpers/HttpError.js";
 import { signToken } from "../services/jwtService.js";
 import bcrypt from "bcrypt";
 import { User } from "../models/userModel.js";
+import Jimp from "jimp";
+import { promises as fs } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const avatarsPath = path.join(__dirname, "../", "public", "avatars");
 
 export const signup = async (req, res, next) => {
   try {
@@ -15,6 +25,7 @@ export const signup = async (req, res, next) => {
     res.status(201).json({
       email: newUser.email,
       subscription: newUser.subscription,
+      avatarURL: newUser.avatarURL,
     });
   } catch (err) {
     next(err);
@@ -37,7 +48,10 @@ export const login = async (req, res, next) => {
 
     res.status(201).json({
       token,
-      user: { email: user.email, subscription: user.subscription },
+      user: {
+        email: user.email,
+        subscription: user.subscription,
+      },
     });
   } catch (err) {
     next(err);
@@ -61,4 +75,29 @@ export const getCurrent = (req, res) => {
     email,
     subscription,
   });
+};
+export const updateAvatar = async (req, res) => {
+  try {
+    if (!req.user) {
+    throw HttpError(401, "Not authorized");
+  }
+  const { _id } = req.user;
+  const { path: tempUpload, originalname } = req.file;
+  const fileName = `${_id}_${originalname}`;
+  const resultUpload = path.join(avatarsPath, fileName);
+
+  await fs.rename(tempUpload, resultUpload);
+
+  const image = await Jimp.read(resultUpload);
+  await image.resize(250, 250).writeAsync(resultUpload);
+
+  const avatarURL = path.join("avatars", fileName);
+  await User.findByIdAndUpdate(_id, { avatarURL });
+  res.json({
+    avatarURL,
+  });
+  }
+  catch (err) {
+    next(err);
+  }
 };
