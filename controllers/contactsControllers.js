@@ -11,7 +11,7 @@ import { Types } from "mongoose";
 
 export const getAllContacts = async (req, res, next) => {
   try {
-    const result = await listContacts();
+    const result = await listContacts(req);
     res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -24,7 +24,7 @@ export const getOneContact = async (req, res, next) => {
     const idIsValid = Types.ObjectId.isValid(id);
     if (!idIsValid) throw HttpError(404, "User not found..");
 
-    const result = await getContactById(id);
+    const result = await getContactById(req, id);
     if (!result) throw HttpError(404);
 
     res.status(200).json(result);
@@ -39,7 +39,7 @@ export const deleteContact = async (req, res, next) => {
     const idIsValid = Types.ObjectId.isValid(id);
     if (!idIsValid) throw HttpError(404, "User not found..");
 
-    const result = await removeContact(id);
+    const result = await removeContact(req, id);
     if (!result) throw HttpError(404);
 
     res.status(200).json(result);
@@ -50,7 +50,8 @@ export const deleteContact = async (req, res, next) => {
 
 export const createContact = async (req, res, next) => {
   try {
-    const result = await addContact(req.body);
+    const { _id: owner } = req.user;
+    const result = await addContact({ ...req.body, owner });
     res.status(201).json(result);
   } catch (error) {
     next(error);
@@ -66,7 +67,7 @@ export const updateContact = async (req, res, next) => {
     if (Object.keys(req.body).length === 0) {
       throw HttpError(404, "Body must have at least one field");
     }
-    const result = await updatedContact(id, req.body);
+    const result = await updatedContact(req, id, req.body);
     if (!result) throw HttpError(404);
 
     res.status(200).json(result);
@@ -82,7 +83,7 @@ export const updateStatus = async (req, res, next) => {
     if (!idIsValid) throw HttpError(404, "User not found..");
 
     const { favorite } = req.body;
-    const result = await updateStatusContact(contactId, { favorite });
+    const result = await updateStatusContact(req, contactId, { favorite });
     if (!updatedContact) throw HttpError(404);
     res.status(200).json(result);
   } catch (error) {
