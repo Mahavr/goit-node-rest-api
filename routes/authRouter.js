@@ -4,11 +4,17 @@ import {
   signup,
   logout,
   getCurrent,
-  updateAvatar
+  updateAvatar,
+  verifyEmail,
+  resendVerifyEmail
 } from "../controllers/authControllers.js";
 import validateBody from "../helpers/validateBody.js";
 
-import { signupUserSchema, loginUserSchema } from "../schemas/userSchemas.js";
+import {
+  signupUserSchema,
+  loginUserSchema,
+  emailSchema,
+} from "../schemas/userSchemas.js";
 import { tokenCheck } from "../helpers/tokenCheck.js";
 import { upload } from "../helpers/upload.js";
 
@@ -16,6 +22,11 @@ import { upload } from "../helpers/upload.js";
 const userRouter = express.Router();
 
 userRouter.post("/register", validateBody(signupUserSchema), signup);
+
+userRouter.get("/verify/:verificationToken", verifyEmail);
+
+userRouter.post("/verify", validateBody(emailSchema), resendVerifyEmail);
+
 userRouter.post("/login", validateBody(loginUserSchema), login);
 userRouter.post("/logout", tokenCheck, logout);
 userRouter.get("/current", tokenCheck, getCurrent);

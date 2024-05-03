@@ -1,6 +1,7 @@
 import { Contact } from "../models/contactModel.js";
 import { User } from "../models/userModel.js";
 import { signToken } from "./jwtService.js";
+import { v4 } from "uuid";
 export async function listContacts(req) {
   // ...твій код. Повертає масив контактів.
   const { _id: owner } = req.user;
@@ -55,10 +56,12 @@ export async function updateStatusContact(req, id, body) {
 }
 
 export async function signupUser(body) {
-  const newUser = await User.create(body);
+  const verificationToken = v4();
+  const newUser = await User.create({ ...body, verificationToken });
+
   newUser.password = undefined;
 
-  return newUser;
+  return { newUser, verificationToken };
 }
 
 export async function checkEmail(email) {

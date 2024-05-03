@@ -24,7 +24,10 @@ export const loginUserSchema = Joi.object({
   email: Joi.string().email().required().messages({
     "string.email": "Invalid user data..",
   }),
-  password:
-    Joi.string()
-    .required(),
+  password: Joi.string().required(),
+});
+export const emailSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Invalid email",
+  }),
 });
